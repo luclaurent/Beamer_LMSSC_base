@@ -1,0 +1,34 @@
+name: Build LaTeX documents
+on: 
+  push: 
+    branches: [ "main" ]
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest    
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+      - name: Run LaTeXMK
+        uses: xu-cheng/texlive-action@v2
+        with:
+            scheme: full
+            run: |
+                # update memory for LaTeX
+                export TEXMFCNF=$(pwd):
+                texhash
+                # build pdf
+                latexmk -pdflatex -shell-escape Template_HCERES.tex
+                #
+                if [[ -f Template_HCERES.pdf ]]
+                then
+                echo "Files built >> Done"
+                exit 0
+                else
+                echo "Files is missing >> KO"
+                exit 1
+                fi
+      - name: Export .pdf as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PDF file
+          path: Template_HCERES.pdf
